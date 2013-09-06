@@ -43,6 +43,7 @@ Check it out, feel free to fork, submit pull requests, etc.
 #### Take-aways:
 * understanding filter networks (mono filter, fft filter)
 * how to access frequency data
+* use setInterval for drawing
 
 
 ### Step 3: Calculating pitch
@@ -52,3 +53,7 @@ Check it out, feel free to fork, submit pull requests, etc.
   - replace fft display with pitch analysis
   - finds zero crossings
   - calculates pitch & maps to note
+
+#### Take-aways:
+* pitch analysis can be done in real-time in the browser
+* use requesteAnimationFrame for more immediate drawing
