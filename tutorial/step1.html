@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <title>Pitch Detector: Step 1 - getting audio from the microphone into the Web Audio API</title>
+</head>
+<body>
+  <script>
+    // We could just create and Audio object and add the stream as a @src,
+    // but then we can't work with the audio data.
+    // So, let's get it into an audio context of the Web Audio API:
+    // https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#AudioContext-section
+    function gotStream(evt) {
+      // Create an AudioNode from the stream.
+      var audioContext = new webkitAudioContext();
+      var mediaStreamSource = audioContext.createMediaStreamSource(evt);
+
+      // route media stream to final destination (i.e. HW output)
+      mediaStreamSource.connect(audioContext.destination);
+    }
+
+    // grab audio input
+    navigator.webkitGetUserMedia({audio:true}, gotStream);
+
+  </script>
+</body>
+</html>
+
+

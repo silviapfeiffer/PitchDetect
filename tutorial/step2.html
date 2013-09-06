@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <title>Pitch Detector: Step 1 - getting audio from the microphone into the Web Audio API</title>
+</head>
+<body>
+  <canvas width="640" height="480"></canvas>
+  <script>
+    var analyser;
+    var audioContext;
+
+    // convert from stereo to mono
+    function convertToMono(input) {
+      // access the two channels
+      var splitter = audioContext.createChannelSplitter(2);
+
+      // prepare to merge 2 inputs
+      var merger = audioContext.createChannelMerger(2);
+
+      // connect the splitter to the input stream
+      input.connect( splitter );
+      // connect the merger to the splitters
+      splitter.connect( merger, 0, 0 );
+      splitter.connect( merger, 0, 1 );
+
+      // return the merged stream
+      return merger;
+    }
+
+    // Borrowed from https://developer.tizen.org/documentation/articles/advanced-web-audio-api-usage
+    function draw() {
+      var canvas, context, width, height, frequencyData, barWidth, barHeight, barSpacing, barCount, loopStep, hue;
+
+      canvas = document.getElementsByTagName('canvas')[0];
+      context = canvas.getContext('2d');
+      width = canvas.width;
+      height = canvas.height;
+      barWidth = 10;
+      barSpacing = 2;
+
+      // Create arrays to store sound data
+      frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+      // Retrieve data
+      analyser.getByteFrequencyData(frequencyData);
+
+      context.clearRect(0, 0, width, height);
+      barCount = Math.round(width / (barWidth + barSpacing));
+      loopStep = Math.floor(frequencyData.length / barCount);
+
+      for (var i = 0; i < barCount; i++) {
+        barHeight = frequencyData[i * loopStep];
+        hue = parseInt(120 * (1 - (barHeight / 255)), 10);
+        context.fillStyle = 'hsl(' + hue + ',75%,50%)';
+        context.fillRect(((barWidth + barSpacing) * i) + (barSpacing / 2), height, barWidth - barSpacing, -barHeight);
+      }
+    }
+
+    function gotStream(evt) {
+      // Create an AudioNode from the stream.
+      audioContext = new webkitAudioContext();
+      var mediaStreamSource = audioContext.createMediaStreamSource(evt);
+
+      // route media stream to a mono-converter
+      var monoStream = convertToMono(mediaStreamSource);
+
+      // route mono stream to a frequence analyser
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      monoStream.connect(analyser);
+
+      setInterval(draw, 10);
+
+      // route media stream to final destination (i.e. HW output)
+      analyser.connect(audioContext.destination);
+    }
+
+    // grab audio input
+    navigator.webkitGetUserMedia({audio:true}, gotStream);
+
+  </script>
+</body>
+</html>
