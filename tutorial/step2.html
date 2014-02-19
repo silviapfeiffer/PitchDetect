@@ -58,7 +58,8 @@
 
     function gotStream(evt) {
       // Create an AudioNode from the stream.
-      audioContext = new webkitAudioContext();
+      var AudioContext = window.AudioContext || webkitAudioContext;
+      audioContext = new AudioContext();
       var mediaStreamSource = audioContext.createMediaStreamSource(evt);
 
       // route media stream to a mono-converter
@@ -76,7 +77,10 @@
     }
 
     // grab audio input
-    navigator.webkitGetUserMedia({audio:true}, gotStream);
+    var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    getUserMedia.call(navigator, {audio:true}, gotStream, function (err) {
+        console.log(err)
+    });
 
   </script>
 </body>
